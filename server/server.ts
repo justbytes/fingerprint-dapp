@@ -8,6 +8,7 @@ import { validateEnvironment, createErrorResponse, formatTimestamp } from './uti
 import fingerprintsRoutes from './routes/fingerprints';
 import healthRoutes from './routes/health';
 import { DatabaseError, ValidationError, NotFoundError } from './types';
+import { generalLimiter } from './middleware/rateLimiter';
 
 // Load environment variables
 dotenv.config();
@@ -53,6 +54,9 @@ app.use(
         : false, // Disable HSTS in development
   })
 );
+
+// Rate limit 50 requests per 15 minutes
+app.use(generalLimiter);
 
 // Routes
 app.use('/', healthRoutes); // Health routes: /health
