@@ -1,6 +1,7 @@
-// sever/routes/fingerprints.ts
-import { Router, Request, Response } from 'express';
+// server/routes/fingerprints.ts
+import { Router, Response } from 'express';
 import { DatabaseService } from '../config/database';
+import { validateApiKey, AuthenticatedRequest } from '../middleware/auth';
 import {
   validateCreateTransaction,
   validateFingerprintId,
@@ -27,19 +28,17 @@ import {
 const router = Router();
 
 /**
- * POST /log - Add transaction to fingerprint (creates new fingerprint if doesn't exist)
+ * POST /log - Add transaction to fingerprint (PROTECTED ENDPOINT)
  */
 router.post(
   '/log',
+  validateApiKey,
   validateCreateTransaction,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const requestData = req.body as CreateTransactionRequest;
-
-      // Use current timestamp if not provided
       const timestamp = requestData.timestamp || formatTimestamp();
 
-      // Add transaction to fingerprint (creates new record if needed)
       const recordId = await DatabaseService.addTransactionToFingerprint({
         fingerprintId: requestData.fingerprintId,
         walletAddress: requestData.walletAddress,
@@ -48,7 +47,6 @@ router.post(
         timestamp,
       });
 
-      // Get the updated record
       const updatedRecord = await DatabaseService.getFingerprintById(requestData.fingerprintId);
 
       if (!updatedRecord) {
@@ -81,25 +79,25 @@ router.post(
 );
 
 /**
- * GET /fingerprints - Get all fingerprints with optional pagination
+ * GET /fingerprints - Get all fingerprints
  */
 router.get(
   '/fingerprints',
+  validateApiKey,
   validateGetFingerprintsQuery,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const query = req.query as GetFingerprintsQuery;
+      const isAuthenticated = req.isAuthenticated || false;
 
-      // Set defaults and sanitize
       const page = query.page || 1;
-      const limit = Math.min(query.limit || 50, 100); // Cap at 100
+      const limit = query.limit || 50;
       const offset = (page - 1) * limit;
 
       const validSortFields = ['created_at', 'updated_at', 'fingerprint_id', 'wallet_address'];
       const sortBy = sanitizeSortField(query.sortBy || 'created_at', validSortFields);
       const sortOrder = sanitizeSortOrder(query.sortOrder || 'DESC');
 
-      // Get data from database
       const { logs, total } = await DatabaseService.getAllFingerprints({
         limit,
         offset,
@@ -107,16 +105,38 @@ router.get(
         sortOrder,
       });
 
-      // Transform data
-      const transformedLogs = logs.map((log: FingerprintLogRow) => transformFingerprintLog(log));
+      const transformedLogs = logs.map((log: FingerprintLogRow) => {
+        const transformed = transformFingerprintLog(log);
 
-      // Calculate pagination
+        // Hide sensitive data for unauthenticated requests
+        if (!isAuthenticated) {
+          return {
+            ...transformed,
+            fingerprintId: transformed.fingerprintId.slice(0, 8) + '...',
+            walletAddress:
+              transformed.fingerprintHash.slice(0, 6) +
+              '...' +
+              transformed.fingerprintHash.slice(-4),
+            transactions: transformed.transactions?.map(tx => ({
+              ...tx,
+              txHash: tx.txHash ? tx.txHash.slice(0, 10) + '...' + tx.txHash.slice(-8) : null,
+              walletAddress: tx.walletAddress
+                ? tx.walletAddress.slice(0, 6) + '...' + tx.walletAddress.slice(-4)
+                : null,
+            })),
+          };
+        }
+
+        return transformed;
+      });
+
       const pagination = calculatePagination(page, limit, total);
 
       res.json({
         success: true,
         data: transformedLogs,
         pagination,
+        authenticated: isAuthenticated,
       });
     } catch (error) {
       console.error('Error fetching fingerprints:', error);
@@ -136,23 +156,22 @@ router.get(
 );
 
 /**
- * GET /fingerprints/by-fingerprint-hash/:hash - Get fingerprint by fingerprint hash
+ * GET /fingerprints/by-fingerprint-hash/:hash - Get fingerprint by hash (PROTECTED)
  */
 router.get(
   '/fingerprints/by-fingerprint-hash/:hash',
-  validateFingerprintHash, // Use the new validation middleware
-  async (req: Request, res: Response): Promise<void> => {
+  validateApiKey,
+  validateFingerprintHash,
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const { hash } = req.params; // Get hash from params, not walletAddress
+      const { hash } = req.params;
 
-      // Get fingerprint by hash - you'll need to create this method
       const record = await DatabaseService.getFingerprintByHash(hash);
 
       if (!record) {
         throw new NotFoundError('No fingerprint found for this hash');
       }
 
-      // Transform data
       const transformedRecord = transformFingerprintLog(record as FingerprintLogRow);
 
       res.json(createSuccessResponse(transformedRecord));
@@ -179,23 +198,22 @@ router.get(
 );
 
 /**
- * GET /fingerprints/by-id/:fingerprintId - Get fingerprint by fingerprint ID
+ * GET /fingerprints/by-id/:fingerprintId - Get fingerprint by ID (PROTECTED)
  */
 router.get(
   '/fingerprints/by-id/:fingerprintId',
+  validateApiKey,
   validateFingerprintId,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const { fingerprintId } = req.params;
 
-      // Get fingerprint by ID
       const record = await DatabaseService.getFingerprintById(fingerprintId);
 
       if (!record) {
         throw new NotFoundError('No fingerprint found with this ID');
       }
 
-      // Transform data
       const transformedRecord = transformFingerprintLog(record as FingerprintLogRow);
 
       res.json(createSuccessResponse(transformedRecord));

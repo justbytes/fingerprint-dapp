@@ -42,19 +42,21 @@ export function safeJsonParse(jsonString: string): any[] {
  * Validate environment variables and return typed config
  */
 export function validateEnvironment() {
-  const config = {
-    PORT: parseInt(process.env.PORT || '3001', 10),
-    NODE_ENV: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
+  const requiredVars = {
+    PORT: process.env.PORT || '3001',
+    NODE_ENV: process.env.NODE_ENV || 'development',
     FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
-    DB_PATH: process.env.DB_PATH,
+    API_SECRET_KEY: process.env.API_SECRET_KEY,
   };
 
-  // Validate PORT
-  if (isNaN(config.PORT) || config.PORT < 1 || config.PORT > 65535) {
-    throw new Error('PORT must be a valid port number (1-65535)');
+  // Check for missing API key
+  if (!requiredVars.API_SECRET_KEY) {
+    console.error('❌ Missing required environment variable: API_SECRET_KEY');
+    console.log('💡 Please add API_SECRET_KEY to your .env file');
+    process.exit(1);
   }
 
-  return config;
+  return requiredVars;
 }
 
 /**

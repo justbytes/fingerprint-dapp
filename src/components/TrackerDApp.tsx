@@ -12,6 +12,7 @@ import {
   useTransactionReceipt,
 } from 'src/hooks/useContract';
 import { getFingerprintHash } from 'src/lib/fingerprint';
+import { logTransaction, getFingerprintByHash } from 'src/lib/api';
 import { formatEther } from 'viem';
 import {
   ExternalLink,
@@ -75,14 +76,11 @@ export function TrackerDApp() {
     setWalletDataError(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
       console.log('Fetching wallet data for fingerprint hash:', hash);
 
-      const response = await fetch(`${apiUrl}/fingerprints/by-fingerprint-hash/${hash}`);
+      const response = await getFingerprintByHash(hash);
 
       if (response.status === 404) {
-        // No data found for this fingerprint hash
         setWalletData(null);
         setWalletDataLoading(false);
         return;
@@ -108,21 +106,20 @@ export function TrackerDApp() {
 
   // Handle successful transaction and call backend API
   useEffect(() => {
-    if (receipt && receipt.status === 'success' && visitorData && address && txHash) {
+    if (
+      receipt &&
+      receipt.status === 'success' &&
+      visitorData &&
+      address &&
+      txHash &&
+      fingerprintHash
+    ) {
       setShowApiCall(true);
       setApiCallStatus('loading');
 
-      // Call the backend API to log the transaction
-      const logTransaction = async () => {
+      // Call the backend API to log the transaction using the new authenticated method
+      const logTransactionToBackend = async () => {
         try {
-          // Log the request details for debugging
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-          // Debug: Log the API URL
-          console.log('Environment check:', {
-            NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-            apiUrl: apiUrl,
-          });
           const requestBody = {
             fingerprintId: visitorData.visitorId,
             walletAddress: address,
@@ -131,26 +128,17 @@ export function TrackerDApp() {
             timestamp: new Date().toISOString(),
           };
 
-          console.log('Making API call to:', `${apiUrl}/log`);
+          console.log('Making authenticated API call to log transaction');
           console.log('Request body:', requestBody);
 
-          const response = await fetch(`${apiUrl}/log`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-          });
+          const response = await logTransaction(requestBody);
 
           console.log('Response status:', response.status);
-          console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
-          // Get response text first to see what we're actually receiving
           const responseText = await response.text();
           console.log('Raw response:', responseText);
 
           if (!response.ok) {
-            // Try to parse as JSON, but fallback to text if it fails
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
             try {
               const errorData = JSON.parse(responseText);
@@ -162,7 +150,6 @@ export function TrackerDApp() {
             throw new Error(errorMessage);
           }
 
-          // Try to parse the successful response
           let data;
           try {
             data = JSON.parse(responseText);
@@ -171,15 +158,14 @@ export function TrackerDApp() {
             console.error('Failed to parse success response as JSON:', parseError);
             throw new Error('Server returned invalid JSON response: ' + responseText);
           }
+
           setApiCallStatus('success');
           setApiError(null);
 
-          // Refresh wallet data after successful transaction
           if (fingerprintHash) {
             setTimeout(() => fetchWalletData(fingerprintHash), 1000);
           }
 
-          // Hide the API call status after 5 seconds
           setTimeout(() => {
             setShowApiCall(false);
             setApiCallStatus(null);
@@ -189,7 +175,6 @@ export function TrackerDApp() {
           setApiCallStatus('error');
           setApiError(error instanceof Error ? error.message : 'Unknown error occurred');
 
-          // Hide the API call status after 8 seconds (longer for errors)
           setTimeout(() => {
             setShowApiCall(false);
             setApiCallStatus(null);
@@ -198,10 +183,9 @@ export function TrackerDApp() {
         }
       };
 
-      logTransaction();
+      logTransactionToBackend();
     }
   }, [receipt, visitorData, address, txHash, fingerprintHash]);
-
   const handleSubmitAction = async () => {
     if (!fingerprintHash) return;
 
