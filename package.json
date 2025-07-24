@@ -1,0 +1,60 @@
+{
+  "name": "web3-tracker-dapp",
+  "version": "1.0.0",
+  "description": "Full-stack Web3 DApp for tracking transactions with device fingerprints",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "backend:dev": "nodemon",
+    "backend:start": "node dist/server.js",
+    "backend:build": "tsc --project tsconfig.server.json"
+  },
+  "dependencies": {
+    "@fingerprintjs/fingerprintjs-pro": "^3.9.0",
+    "@fingerprintjs/fingerprintjs-pro-react": "^2.6.0",
+    "@reown/appkit": "^1.7.15",
+    "@reown/appkit-adapter-wagmi": "^1.7.15",
+    "@tanstack/react-query": "^5.0.0",
+    "@types/helmet": "^0.0.48",
+    "axios": "^1.6.0",
+    "clsx": "^2.0.0",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helmet": "^8.1.0",
+    "lucide-react": "^0.300.0",
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
+    "tailwind-merge": "^2.0.0",
+    "viem": "^2.0.0",
+    "wagmi": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/crypto-js": "^4.2.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/sqlite3": "^3.1.11",
+    "autoprefixer": "^10.4.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0",
+    "nodemon": "^3.0.3",
+    "postcss": "^8.4.0",
+    "rimraf": "^5.0.5",
+    "tailwindcss": "^3.3.0",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

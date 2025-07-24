@@ -1,0 +1,39 @@
+# Environment variables
+.env
+
+# Dependencies
+foundry/lib/
+foundry/out/
+cache/
+foundry/broadcast/
+
+node_modules/
+data/
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+.next
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Coverage
+lcov.info
+coverage/
+
+# Node modules (if using any JS tools)
+node_modules/
+
+# Solidity
+*.swp
+*.swo
+
+# Build artifacts
+artifacts/
+typechain/
