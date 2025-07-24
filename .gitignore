@@ -10,11 +10,12 @@ foundry/broadcast/
 node_modules/
 data/
 package-lock.json
-
+dist/
 # IDE
 .vscode/
 .idea/
 .next
+
 
 # OS
 .DS_Store

@@ -67,10 +67,13 @@ export const validateCreateTransaction = (
     });
     return;
   }
-  if (!/^[a-fA-F0-9]{64}$/.test(hashedFingerprint)) {
+
+  // Check hash
+  if (!/^0x[a-fA-F0-9]{64}$/.test(hashedFingerprint)) {
     res.status(400).json({
       success: false,
-      error: 'hashedFingerprint must be a valid SHA-256 hash (64 hex characters)',
+      error:
+        'hashedFingerprint must be a valid SHA-256 hash (64 hex characters, with or without 0x prefix)',
     });
     return;
   }
@@ -143,10 +146,12 @@ export const validateFingerprintHash = (req: Request, res: Response, next: NextF
     return;
   }
 
-  if (!hash.match(/^0x[a-fA-F0-9]{64}$/)) {
+  // Check hash
+  if (!/^0x[a-fA-F0-9]{64}$/.test(hash)) {
     res.status(400).json({
       success: false,
-      error: 'Invalid fingerprint hash format',
+      error:
+        'hashedFingerprint must be a valid SHA-256 hash (64 hex characters, with or without 0x prefix)',
     });
     return;
   }
