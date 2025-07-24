@@ -25,7 +25,6 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
-  Search,
   Filter,
   RefreshCw,
 } from 'lucide-react';
@@ -62,6 +61,7 @@ export function TrackerDApp() {
   const { open } = useAppKit();
   const { data: visitorData, isLoading: fingerprintLoading } = useVisitorData();
 
+  // App state
   const [fingerprintHash, setFingerprintHash] = useState<`0x${string}` | undefined>();
   const [showApiCall, setShowApiCall] = useState(false);
   const [apiCallStatus, setApiCallStatus] = useState<'loading' | 'success' | 'error' | null>(null);
@@ -81,6 +81,7 @@ export function TrackerDApp() {
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
 
+  // TrackerContract use hooks
   const {
     submitAction,
     isLoading: isSubmitting,
@@ -89,7 +90,6 @@ export function TrackerDApp() {
     txHash,
     reset,
   } = useSubmitAction();
-
   const { data: fingerprintData } = useFingerprintData(fingerprintHash);
   const { data: contractBalance } = useContractBalance();
   const { data: totalFingerprints } = useTotalFingerprints();
@@ -118,6 +118,9 @@ export function TrackerDApp() {
     fetchAllFingerprints();
   }, [currentPage, pageLimit, sortBy, sortOrder]);
 
+  /**
+   * Makes an authenticated request to get the users data using their fingerprint hash
+   */
   const fetchWalletData = async (hash: string) => {
     setWalletDataLoading(true);
     setWalletDataError(null);
@@ -151,6 +154,9 @@ export function TrackerDApp() {
     }
   };
 
+  /**
+   * Makes an authenticated request to get all of the fingerprints from the backend with optional custom filters
+   */
   const fetchAllFingerprints = async () => {
     setAllFingerprintsLoading(true);
     setAllFingerprintsError(null);
@@ -193,7 +199,7 @@ export function TrackerDApp() {
       setShowApiCall(true);
       setApiCallStatus('loading');
 
-      // Call the backend API to log the transaction using the new authenticated method
+      // Makes the authenticated post request to log the data using the backend
       const logTransactionToBackend = async () => {
         try {
           const requestBody = {
@@ -204,15 +210,12 @@ export function TrackerDApp() {
             timestamp: new Date().toISOString(),
           };
 
-          console.log('Making authenticated API call to log transaction');
-          console.log('Request body:', requestBody);
-
+          // Authenticated request
           const response = await logTransaction(requestBody);
 
           console.log('Response status:', response.status);
 
           const responseText = await response.text();
-          console.log('Raw response:', responseText);
 
           if (!response.ok) {
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
@@ -266,6 +269,9 @@ export function TrackerDApp() {
     }
   }, [receipt, visitorData, address, txHash, fingerprintHash]);
 
+  /**
+   * Uses the submitAction hook to call the smart contract
+   */
   const handleSubmitAction = async () => {
     if (!fingerprintHash) return;
 
@@ -276,17 +282,9 @@ export function TrackerDApp() {
     await submitAction(fingerprintHash);
   };
 
+  // Changes the page
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-  };
-
-  const handleSortChange = (field: string) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
-    } else {
-      setSortBy(field);
-      setSortOrder('DESC');
-    }
   };
 
   return (

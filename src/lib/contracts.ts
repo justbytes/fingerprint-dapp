@@ -1,6 +1,6 @@
 import { Address } from 'viem';
 
-// Contract ABI (from your provided ABI file)
+// Contract ABI for the TracerContract
 export const TRACKER_CONTRACT_ABI = [
   { type: 'constructor', inputs: [], stateMutability: 'nonpayable' },
   {
@@ -117,4 +117,5 @@ export const CONTRACT_CONFIG = {
   chainId: parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '84532'),
 } as const;
 
-export const TRANSACTION_VALUE = '0.001'; // ETH amount to send with each transaction
+// ETH amount to send with each transaction
+export const TRANSACTION_VALUE = '0.001';

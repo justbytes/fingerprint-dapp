@@ -27,18 +27,6 @@ export function transformFingerprintLog(row: FingerprintLogRow): FingerprintLogR
 }
 
 /**
- * Safely parse JSON string, return empty array if invalid
- */
-export function safeJsonParse(jsonString: string): any[] {
-  try {
-    const parsed = JSON.parse(jsonString);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-/**
  * Validate environment variables and return typed config
  */
 export function validateEnvironment() {
@@ -117,25 +105,4 @@ export function sanitizeSortOrder(sortOrder: string): 'ASC' | 'DESC' {
  */
 export function formatTimestamp(date?: Date): string {
   return (date || new Date()).toISOString();
-}
-
-/**
- * Check if string is valid Ethereum address
- */
-export function isValidEthereumAddress(address: string): boolean {
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
-}
-
-/**
- * Check if string is valid transaction hash
- */
-export function isValidTransactionHash(hash: string): boolean {
-  return /^0x[a-fA-F0-9]{64}$/.test(hash);
-}
-
-/**
- * Generate a simple request ID for logging
- */
-export function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }

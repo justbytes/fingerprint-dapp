@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import {Test} from "foundry/lib/forge-std/src/Test.sol";
 import {TrackerContract} from "../src/TrackerContract.sol";
 
+/// Contains all of the tests for the TrackerContract
 contract TrackerContractTest is Test {
     TrackerContract public tracker;
     address public owner;

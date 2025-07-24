@@ -29,13 +29,3 @@ export function getFingerprintHash(visitorId: string): `0x${string}` {
   const hash = hashVisitorId(visitorId);
   return hexToBytes32(hash);
 }
-
-/**
- * Validate that a fingerprint hash is properly formatted
- * @param hash - Hash to validate
- * @returns boolean indicating if hash is valid
- */
-export function isValidFingerprintHash(hash: string): boolean {
-  const hexPattern = /^0x[a-fA-F0-9]{64}$/;
-  return hexPattern.test(hash);
-}

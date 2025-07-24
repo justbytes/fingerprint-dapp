@@ -1,8 +1,3 @@
-body {
-  background-color: yellow !important;
-  color: red !important;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

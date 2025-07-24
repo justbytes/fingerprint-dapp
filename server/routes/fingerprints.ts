@@ -28,7 +28,7 @@ import {
 const router = Router();
 
 /**
- * POST /log - Add transaction to fingerprint (PROTECTED ENDPOINT)
+ * POST /log - Add transaction to fingerprint_logs
  */
 router.post(
   '/log',
@@ -79,7 +79,7 @@ router.post(
 );
 
 /**
- * GET /fingerprints - Get all fingerprints
+ * GET /fingerprints - Get all from fingerprints_logs
  */
 router.get(
   '/fingerprints',
@@ -90,14 +90,15 @@ router.get(
       const query = req.query as GetFingerprintsQuery;
       const isAuthenticated = req.isAuthenticated || false;
 
+      // pagination * filtering settings
       const page = query.page || 1;
       const limit = query.limit || 50;
       const offset = (page - 1) * limit;
-
       const validSortFields = ['created_at', 'updated_at', 'fingerprint_id', 'wallet_address'];
       const sortBy = sanitizeSortField(query.sortBy || 'created_at', validSortFields);
       const sortOrder = sanitizeSortOrder(query.sortOrder || 'DESC');
 
+      // Get the data from db
       const { logs, total } = await DatabaseService.getAllFingerprints({
         limit,
         offset,
@@ -105,31 +106,12 @@ router.get(
         sortOrder,
       });
 
+      // Convert to json
       const transformedLogs = logs.map((log: FingerprintLogRow) => {
-        const transformed = transformFingerprintLog(log);
-
-        // Hide sensitive data for unauthenticated requests
-        if (!isAuthenticated) {
-          return {
-            ...transformed,
-            fingerprintId: transformed.fingerprintId.slice(0, 8) + '...',
-            walletAddress:
-              transformed.fingerprintHash.slice(0, 6) +
-              '...' +
-              transformed.fingerprintHash.slice(-4),
-            transactions: transformed.transactions?.map(tx => ({
-              ...tx,
-              txHash: tx.txHash ? tx.txHash.slice(0, 10) + '...' + tx.txHash.slice(-8) : null,
-              walletAddress: tx.walletAddress
-                ? tx.walletAddress.slice(0, 6) + '...' + tx.walletAddress.slice(-4)
-                : null,
-            })),
-          };
-        }
-
-        return transformed;
+        return transformFingerprintLog(log);
       });
 
+      // pagination data
       const pagination = calculatePagination(page, limit, total);
 
       res.json({
@@ -156,7 +138,7 @@ router.get(
 );
 
 /**
- * GET /fingerprints/by-fingerprint-hash/:hash - Get fingerprint by hash (PROTECTED)
+ * GET /fingerprints/by-fingerprint-hash/:hash get data for a single fingerprint hash
  */
 router.get(
   '/fingerprints/by-fingerprint-hash/:hash',
@@ -166,12 +148,14 @@ router.get(
     try {
       const { hash } = req.params;
 
+      // Get the data from db
       const record = await DatabaseService.getFingerprintByHash(hash);
 
       if (!record) {
         throw new NotFoundError('No fingerprint found for this hash');
       }
 
+      // Convert to json
       const transformedRecord = transformFingerprintLog(record as FingerprintLogRow);
 
       res.json(createSuccessResponse(transformedRecord));
@@ -198,7 +182,7 @@ router.get(
 );
 
 /**
- * GET /fingerprints/by-id/:fingerprintId - Get fingerprint by ID (PROTECTED)
+ * GET /fingerprints/by-id/:fingerprintId - Get fingerprint by ID
  */
 router.get(
   '/fingerprints/by-id/:fingerprintId',
@@ -208,12 +192,14 @@ router.get(
     try {
       const { fingerprintId } = req.params;
 
+      // Get data from db
       const record = await DatabaseService.getFingerprintById(fingerprintId);
 
       if (!record) {
         throw new NotFoundError('No fingerprint found with this ID');
       }
 
+      // Convert to json
       const transformedRecord = transformFingerprintLog(record as FingerprintLogRow);
 
       res.json(createSuccessResponse(transformedRecord));

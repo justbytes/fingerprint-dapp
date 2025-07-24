@@ -9,13 +9,12 @@ import fingerprintsRoutes from './routes/fingerprints';
 import healthRoutes from './routes/health';
 import { DatabaseError, ValidationError, NotFoundError } from './types';
 import { generalLimiter } from './middleware/rateLimiter';
-
-// Load environment variables
 dotenv.config();
 
+// Create the app
 const app = express();
 
-// Validate environment and get config
+// Validate environment and get env vars
 const config = validateEnvironment();
 
 // Middleware
@@ -37,6 +36,7 @@ if (config.NODE_ENV === 'development') {
   });
 }
 
+// json parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

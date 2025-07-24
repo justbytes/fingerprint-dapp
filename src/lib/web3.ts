@@ -4,7 +4,6 @@ import { baseSepolia } from '@reown/appkit/networks';
 
 // ReOwn Project ID for wallet connect
 export const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID;
-
 if (!projectId) {
   throw new Error('NEXT_PUBLIC_REOWN_PROJECT_ID is not defined');
 }

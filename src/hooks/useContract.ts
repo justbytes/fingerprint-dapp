@@ -17,6 +17,9 @@ export interface UseSubmitActionResult {
   reset: () => void;
 }
 
+/**
+ * Calls the submitAction function on the TrackerContract
+ */
 export function useSubmitAction(): UseSubmitActionResult {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -26,6 +29,7 @@ export function useSubmitAction(): UseSubmitActionResult {
   const { isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
 
+  // Makes the call to TrackerContract submitAction()
   const submitAction = async (fingerprintHash: `0x${string}`) => {
     if (!isConnected) {
       setError('Please connect your wallet first');
@@ -37,6 +41,7 @@ export function useSubmitAction(): UseSubmitActionResult {
       setError(null);
       setIsSuccess(false);
 
+      // Write to contract
       const hash = await writeContractAsync({
         ...CONTRACT_CONFIG,
         functionName: 'submitAction',
@@ -54,6 +59,7 @@ export function useSubmitAction(): UseSubmitActionResult {
     }
   };
 
+  // Resets state
   const reset = () => {
     setIsLoading(false);
     setIsSuccess(false);
@@ -71,6 +77,9 @@ export function useSubmitAction(): UseSubmitActionResult {
   };
 }
 
+/**
+ * Gets the fingerprint hashs from the TracerContract
+ */
 export function useFingerprintData(fingerprintHash: `0x${string}` | undefined) {
   return useReadContract({
     ...CONTRACT_CONFIG,
@@ -82,6 +91,9 @@ export function useFingerprintData(fingerprintHash: `0x${string}` | undefined) {
   });
 }
 
+/**
+ * Gets the current balance of the TrackerContract
+ */
 export function useContractBalance() {
   return useReadContract({
     ...CONTRACT_CONFIG,
@@ -89,6 +101,9 @@ export function useContractBalance() {
   });
 }
 
+/**
+ * Gets the total amount of fingerprints from TrackerContract
+ */
 export function useTotalFingerprints() {
   return useReadContract({
     ...CONTRACT_CONFIG,
@@ -96,6 +111,9 @@ export function useTotalFingerprints() {
   });
 }
 
+/**
+ * Gets the transaction hash receipt
+ */
 export function useTransactionReceipt(hash: `0x${string}` | null) {
   return useWaitForTransactionReceipt({
     hash: hash || undefined,

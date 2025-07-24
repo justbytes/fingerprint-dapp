@@ -4,6 +4,9 @@ pragma solidity ^0.8.19;
 import { Script, console } from "foundry/lib/forge-std/src/Script.sol";
 import { TrackerContract } from "../src/TrackerContract.sol";
 
+/**
+    Deploys the TrackerContract to the EVM
+ */
 contract DeployScript is Script {
     function run() external {
         // Start broadcasting transactions using cast wallet

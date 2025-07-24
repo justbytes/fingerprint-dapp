@@ -7,6 +7,9 @@ import { DatabaseError } from '../types';
 
 let db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
 
+/**
+ * Creates the SQLite database file and directory, creates tables and indexes
+ */
 export async function initializeDatabase(): Promise<Database<sqlite3.Database, sqlite3.Statement>> {
   try {
     // Create database directory if it doesn't exist
@@ -39,6 +42,9 @@ export async function initializeDatabase(): Promise<Database<sqlite3.Database, s
   }
 }
 
+/**
+ * Create the SQLite fingerprint_logs table with indexes for the fingerprint_id & fingerprint_hash
+ */
 async function createTables(): Promise<void> {
   if (!db) throw new DatabaseError('Database not initialized');
 
@@ -59,6 +65,9 @@ async function createTables(): Promise<void> {
   `);
 }
 
+/**
+ * Gets the database instance
+ */
 export function getDatabase(): Database<sqlite3.Database, sqlite3.Statement> {
   if (!db) {
     throw new DatabaseError('Database not initialized. Call initializeDatabase() first.');
@@ -66,6 +75,9 @@ export function getDatabase(): Database<sqlite3.Database, sqlite3.Statement> {
   return db;
 }
 
+/**
+ * Close the database connection
+ */
 export async function closeDatabase(): Promise<void> {
   if (db) {
     await db.close();
@@ -74,12 +86,17 @@ export async function closeDatabase(): Promise<void> {
   }
 }
 
-// Database utility functions
+/**
+ * DataService holds all of the functions needed to GET and POST data to the SQLite db
+ */
 export class DatabaseService {
   private static get db() {
     return getDatabase();
   }
 
+  /**
+   * Adds a transaction with the given fingerprint_id, walletAddress, transactionHash, fingerprintHash, and timestamp to db
+   */
   static async addTransactionToFingerprint(data: {
     fingerprintId: string;
     walletAddress: string;
@@ -90,7 +107,7 @@ export class DatabaseService {
     try {
       const { fingerprintId, walletAddress, transactionHash, fingerprintHash, timestamp } = data;
 
-      // First, try to find existing record
+      // First see if there is an existing record
       const existingRecord = await this.db.get(
         `
         SELECT id, transactions FROM fingerprint_logs
@@ -99,6 +116,7 @@ export class DatabaseService {
         [fingerprintId, fingerprintHash]
       );
 
+      // New transaction to add
       const newTransaction = {
         txHash: transactionHash,
         walletAddress: walletAddress,
@@ -116,7 +134,7 @@ export class DatabaseService {
           }
         }
 
-        // Check if transaction already exists (prevent duplicates)
+        // Check if transaction hash already exists
         const transactionExists = transactions.some((tx: any) => tx.hash === transactionHash);
         if (transactionExists) {
           throw new DatabaseError('Transaction already exists for this fingerprint');
@@ -124,6 +142,7 @@ export class DatabaseService {
 
         transactions.push(newTransaction);
 
+        // Update the fingerprint_logs
         await this.db.run(
           `
           UPDATE fingerprint_logs
@@ -153,6 +172,9 @@ export class DatabaseService {
     }
   }
 
+  /**
+   * Gets the fingerprint_hash from db
+   */
   static async getFingerprintByHash(fingerprintHash: string) {
     try {
       return await this.db.get(
@@ -170,6 +192,9 @@ export class DatabaseService {
     }
   }
 
+  /**
+   * Gets the fingerprint id from db
+   */
   static async getFingerprintById(fingerprintId: string) {
     try {
       return await this.db.get(
@@ -187,6 +212,9 @@ export class DatabaseService {
     }
   }
 
+  /**
+   * Gets all of the figerprint_log records
+   */
   static async getAllFingerprints(options: {
     limit: number;
     offset: number;
