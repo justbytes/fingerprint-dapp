@@ -373,13 +373,13 @@ export function TrackerDApp() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Total Fingerprints:</span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-900">
                     {totalFingerprints ? totalFingerprints.toString() : '0'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Contract Balance:</span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-900">
                     {contractBalance ? `${formatEther(contractBalance)} ETH` : '0 ETH'}
                   </span>
                 </div>
@@ -400,13 +400,15 @@ export function TrackerDApp() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Total Sent:</span>
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium text-gray-900">
                       {formatEther(fingerprintData[0])} ETH
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Transactions:</span>
-                    <span className="text-sm font-medium">{fingerprintData[1].toString()}</span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {fingerprintData[1].toString()}
+                    </span>
                   </div>
                 </div>
               ) : (
@@ -774,7 +776,7 @@ export function TrackerDApp() {
                       setPageLimit(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="border border-gray-300 rounded-lg px-3 py-1 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value={5}>5 per page</option>
                     <option value={10}>10 per page</option>
@@ -788,7 +790,7 @@ export function TrackerDApp() {
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="border border-gray-300 rounded-lg px-3 py-1 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="created_at">Created Date</option>
                     <option value="updated_at">Updated Date</option>
@@ -797,7 +799,7 @@ export function TrackerDApp() {
                   </select>
                   <button
                     onClick={() => setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC')}
-                    className="border border-gray-300 rounded-lg px-3 py-1 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="border border-gray-300 rounded-lg px-3 py-1 text-sm text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     {sortOrder === 'ASC' ? '↑ ASC' : '↓ DESC'}
                   </button>
@@ -924,7 +926,7 @@ export function TrackerDApp() {
                                 >
                                   <div className="flex items-center space-x-2">
                                     <Activity className="h-3 w-3 text-gray-400" />
-                                    <span className="font-mono">
+                                    <span className="font-mono text-gray-900">
                                       {tx.txHash
                                         ? `${tx.txHash.slice(0, 8)}...${tx.txHash.slice(-6)}`
                                         : 'No hash'}
@@ -1058,11 +1060,11 @@ export function TrackerDApp() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Network:</span>
-                <span>Base Sepolia Testnet</span>
+                <span className="text-gray-900">Base Sepolia Testnet</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Connected Account:</span>
-                <span className="break-all">
+                <span className="break-all text-gray-900">
                   {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not connected'}
                 </span>
               </div>
